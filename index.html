@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Чат-бот</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            width: 80%;
+            max-width: 600px;
+            margin: auto;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+        }
+        #chat {
+            border: 1px solid #ddd;
+            padding: 10px;
+            height: 300px;
+            overflow-y: scroll;
+            margin-bottom: 20px;
+        }
+        .message {
+            margin: 10px 0;
+        }
+        .user {
+            text-align: right;
+        }
+        .bot {
+            text-align: left;
+        }
+        input[type="file"] {
+            margin-bottom: 10px;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #35424a;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        button:hover {
+            background-color: #444;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Чат-бот</h1>
+    <div id="chat"></div>
+    <input type="file" id="imageInput" accept="image/*">
+    <button id="sendButton">Отправить изображение</button>
+</div>
+
+<script>
+    document.getElementById('sendButton').addEventListener('click', function() {
+        const chat = document.getElementById('chat');
+        const input = document.getElementById('imageInput');
+        const file = input.files[0];
+
+        if (!file) {
+            alert('Пожалуйста, выберите изображение!');
+            return;
+        }
+
+        // Отображение сообщения пользователя
+        const userMessage = document.createElement('div');
+        userMessage.className = 'message user';
+        userMessage.textContent = 'Вы: ' + file.name;
+        chat.appendChild(userMessage);
+
+        // Создание FormData для отправки изображения
+        const formData = new FormData();
+        formData.append('image', file);
+
+        // Отправка изображения на сервер
+        fetch('/upload', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            const botMessage = document.createElement('div');
+            botMessage.className = 'message bot';
+            botMessage.textContent = 'Бот: ' + data.message;
+            chat.appendChild(botMessage);
+            chat.scrollTop = chat.scrollHeight; // Прокрутка вниз
+        })
+        .catch(error => {
+            console.error('Ошибка:', error);
+            const botMessage = document.createElement('div');
+            botMessage.className = 'message bot';
+            botMessage.textContent = 'Бот: Произошла ошибка при загрузке изображения.';
+            chat.appendChild(botMessage);
+            chat.scrollTop = chat.scrollHeight; // Прокрутка вниз
+        });
+
+        // Сброс поля ввода
+        input.value = '';
+        chat.scrollTop = chat.scrollHeight; // Прокрутка вниз
+    });
+</script>
+
+</body>
+</html>
